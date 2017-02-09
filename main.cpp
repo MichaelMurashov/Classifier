@@ -1,52 +1,77 @@
 #include <iostream>
-#include <vector>
 #include <dirent.h>
 
-#include <opencv2/features2d/features2d.hpp>
+#include "bow.cpp"
 
-using namespace std;
-
-void getFilesInDir(const string& dirPath, vector<string>& filesList) {
-    DIR* dir = opendir(dirPath.c_str());  // открываем общую директорию
+void getFilesInDir(const string& dirPath, vector<string>& filesList, int& count) {
+    DIR* dir = opendir(dirPath.c_str());  // открываем директорию
     if (dir == NULL) {
-        cout << "Can't open the diretcory: " << dirPath;
+        cout << "Can't open the directory: " << dirPath;
         exit(0);
     }
 
-    // читаем поддиректории
-    dirent* dirent1;
-    while ((dirent1 = readdir(dir)) != NULL) {
-        // пропускаем скрытые директории
-        if (strcmp(dirent1->d_name, ".") == 0 || strcmp(dirent1->d_name, "..") == 0 ||
-                strcmp(dirent1->d_name, ".DS_Store") == 0)
+    // читаем файлы
+    dirent* dirent;
+    while ((dirent = readdir(dir)) != NULL) {
+        char* name = dirent->d_name;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0 || strcmp(name, ".DS_Store") == 0)
             continue;
 
-        string path = dirPath + "/" + (const char*)dirent1->d_name;
-        DIR* current = opendir(path.c_str());  // открываем поддиректорию
-        if (current == NULL) {
-            cout << "Can't open the diretcory: " << dirent1->d_name;
-            exit(0);
-        }
-
-        // читаем первый файл
-        dirent* dirent2;
-        int i = 0;
-        while ((dirent2 = readdir(current)) != NULL) {
-            if (strcmp(dirent2->d_name, ".") == 0 || strcmp(dirent2->d_name, "..") == 0 ||
-                    strcmp(dirent2->d_name, ".DS_Store") == 0)
-                continue;
-            filesList.push_back(path + "/" + (const char*)dirent2->d_name);  // заносим в список
-        }
-
-        closedir(current);  // закрываем поддиректорию
+        count++;
+        filesList.push_back(dirPath + "/" + (const char*)name);  // заносим в список
     }
 
-    closedir(dir);  // закрываем общую директорию
+    closedir(dir);  // закрываем директорию
 }
 
-int main(int argc, char** argv) {
-    vector<string> testFilesList;
-    getFilesInDir(argv[1], testFilesList);
+int main(int argc, char* argv[]) {
+    const int numOfCategory = 4;
+    vector<string> trainFilesList, testFilesList;
+
+    // считываем тренировочную выборку
+    int trainCategory[numOfCategory];
+    for (int i = 1; i <= numOfCategory; i++) {
+        int count = 0;
+        getFilesInDir(argv[i], trainFilesList, count);
+        trainCategory[i] = count;
+    }
+
+    // формируем правильные ответы для тренировочной выборки
+    Mat trainAnswers((int)trainFilesList.size(), 1, CV_32S);
+    for (int i = 0; i < numOfCategory; i++) {
+        for (int j = 0; j < trainCategory[i]; i++) {
+            trainAnswers.push_back(i);
+        }
+    }
+
+    // считываем тестовую выборку
+    int testCategory[numOfCategory];
+    for (int i = 1; i <= numOfCategory; i++) {
+        int count = 0;
+        getFilesInDir(argv[i], testFilesList, count);
+        testCategory[i] = count;
+    }
+
+    // формируем правильные ответы для тестовой выборки
+    Mat testAnswers((int)testFilesList.size(), 1, CV_32S);
+    for (int i = 0; i < numOfCategory; i++) {
+        for (int j = 0; j < testCategory[i]; i++) {
+            testAnswers.push_back(i);
+        }
+    }
+
+    Ptr<Feature2D> keyPointsDetector = SIFT::create();
+
+    Ptr<DescriptorMatcher> dMatcher = DescriptorMatcher::create("BruteForce");
+
+    Ptr<BOWImgDescriptorExtractor> bowExtractor = new BOWImgDescriptorExtractor(dMatcher);
+
+    Mat vocabulary = trainVocabulary(trainFilesList, keyPointsDetector);
+    bowExtractor->setVocabulary(vocabulary);
+
+    // формируем обучающую выборку
+    Mat trainData, trainResponses;
+    ExtractTrainData(trainFilesList, trainAnswers, trainData, trainResponses, keyPointsDetector, bowExtractor);
 
 
 

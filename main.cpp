@@ -91,7 +91,6 @@ int main(int argc, char* argv[]) {
     // получаем набор предсказанный значений
     Mat predictions = predictOnTestData(testFilesList, keyPointsDetector, bowExtractor, rTrees);
 
-
     // считаем ошибку
     float error = calcClassificationError(testAnswers, predictions);
     cout << 100 - error * 100 << "% correct answers\n";

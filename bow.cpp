@@ -22,8 +22,6 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
 
     cout << "\nTrain vocabulary\n";
     for (int i = 0; i < filesList.size(); i++) {
-        //cout << "\r" << (float)(i) / (float)(filesList.size()) * 100 << "%";
-
         img = imread(filesList[i], IMREAD_GRAYSCALE);
 
         keyPointsDetector->detect(img, keyPoints);
@@ -32,10 +30,7 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
         tr.add(descriptors);
     }
 
-    //cout << "Wait...";
-    Mat temp = tr.cluster();
-    //cout << "\n";
-    return temp;
+    return tr.cluster();
 }
 
 // возвращает признаковое описание изображения
@@ -66,8 +61,6 @@ void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat
         trainData.push_back(extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]));
         trainResponses.push_back(responses.at<int>(i));
     }
-
-    //cout << "\n";
 }
 
 // обучение классификатора «случайный лес»
@@ -91,8 +84,6 @@ Mat predictOnTestData(const vector<string>& filesList, const Ptr<Feature2D> keyP
 
     cout << "Prediction class";
     for (int i = 0; i < filesList.size(); i++) {
-       // cout << "\r" << i/filesList.size()*100 << "%";
-
         Mat description = extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]);
         float qwe = classifier->predict(description);
         answers.push_back(qwe);

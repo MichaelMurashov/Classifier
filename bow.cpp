@@ -11,14 +11,14 @@ using namespace cv;
 using namespace cv::ml;
 using namespace cv::xfeatures2d;
 
-const int vocSize = 25;
-const int numOfTrees = 500;
+const int VOC_SIZE = 25;
+const int NUM_OF_TREES = 500;
 
 // обучение словоря
 Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPointsDetector) {
     Mat img, descriptors;
     vector<KeyPoint> keyPoints;
-    BOWKMeansTrainer tr(vocSize);
+    BOWKMeansTrainer tr(VOC_SIZE);
 
     cout << "\nTrain vocabulary\n";
     for (int i = 0; i < filesList.size(); i++) {
@@ -56,8 +56,6 @@ void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat
 
     cout << "Formation of training sample\n";
     for (int i = 0; i < filesList.size(); i++) {
-        //cout << "\r" << i/filesList.size()*100 << "%";
-
         trainData.push_back(extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]));
         trainResponses.push_back(responses.at<int>(i));
     }
@@ -68,7 +66,7 @@ Ptr<RTrees> trainClassifier(const Mat& trainData, const Mat& trainResponses) {
     Ptr<RTrees> rTrees;
 
     rTrees = ml::RTrees::create();
-    rTrees->setTermCriteria(TermCriteria(TermCriteria::COUNT, numOfTrees, 0));
+    rTrees->setTermCriteria(TermCriteria(TermCriteria::COUNT, NUM_OF_TREES, 0));
 
     Ptr<TrainData> tData = TrainData::create(trainData, ROW_SAMPLE, trainResponses);
 

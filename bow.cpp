@@ -12,7 +12,7 @@ using namespace cv::ml;
 using namespace cv::xfeatures2d;
 
 const int vocSize = 25;
-const int numOfTrees = 200;
+const int numOfTrees = 500;
 
 // обучение словоря
 Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPointsDetector) {
@@ -22,7 +22,7 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
 
     cout << "\nTrain vocabulary\n";
     for (int i = 0; i < filesList.size(); i++) {
-        //cout << (float)(i/filesList.size())*100 << "%\r";
+        //cout << "\r" << (float)(i) / (float)(filesList.size()) * 100 << "%";
 
         img = imread(filesList[i], IMREAD_GRAYSCALE);
 
@@ -32,9 +32,9 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
         tr.add(descriptors);
     }
 
-    cout << "\nWait...";
+    //cout << "Wait...";
     Mat temp = tr.cluster();
-    cout << "\n\n";
+    //cout << "\n";
     return temp;
 }
 
@@ -56,8 +56,8 @@ Mat extractFeaturesFromImage(Ptr<Feature2D> keyPointsDetector, Ptr<BOWImgDescrip
 // формирование обучающей выборки
 void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat& trainData, Mat& trainResponses,
                       const Ptr<Feature2D>& keyPointsDetector, const Ptr<BOWImgDescriptorExtractor>& bowExtractor) {
-    trainData.create(filesList.size(), bowExtractor->descriptorSize(), CV_32F);
-    trainResponses.create(filesList.size(), 1, CV_32S);
+    trainData.create(0, bowExtractor->descriptorSize(), CV_32F);
+    trainResponses.create(0, 1, CV_32S);
 
     cout << "Formation of training sample\n";
     for (int i = 0; i < filesList.size(); i++) {
@@ -67,7 +67,7 @@ void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat
         trainResponses.push_back(responses.at<int>(i));
     }
 
-    cout << "\n\n";
+    //cout << "\n";
 }
 
 // обучение классификатора «случайный лес»
@@ -87,9 +87,9 @@ Ptr<RTrees> trainClassifier(const Mat& trainData, const Mat& trainResponses) {
 // возвращает набор предсказанных значений для тестовой выборки
 Mat predictOnTestData(const vector<string>& filesList, const Ptr<Feature2D> keyPointsDetector,
                       const Ptr<BOWImgDescriptorExtractor> bowExtractor, const Ptr<RTrees> classifier) {
-    Mat answers(filesList.size(), 1, CV_32F);
+    Mat answers(0, 1, CV_32F);
 
-    cout << "Prediction class\n";
+    cout << "Prediction class";
     for (int i = 0; i < filesList.size(); i++) {
        // cout << "\r" << i/filesList.size()*100 << "%";
 

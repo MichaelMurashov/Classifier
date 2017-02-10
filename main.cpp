@@ -25,11 +25,14 @@ void getFilesInDir(const string& dirPath, vector<string>& filesList, int& count)
 }
 
 float calcClassificationError(Mat& responses, Mat& predictions) {
-    int size = responses.rows;
-    int error = 0;
+    float size = (float)responses.rows;
+    float error = 0.0;
 
     for (int i = 0; i < size; i++) {
-        if (responses.at<int>(i) != predictions.at<int>(i))
+        float c1 = (float)(responses.at<int>(i));
+        float c2 = predictions.at<float>(i);
+
+        if (c1 != c2)
             error++;
     }
 
@@ -49,7 +52,7 @@ int main(int argc, char* argv[]) {
     }
 
     // формируем правильные ответы для тренировочной выборки
-    Mat trainAnswers((int)trainFilesList.size(), 1, CV_32S);
+    Mat trainAnswers(0, 1, CV_32S);
     for (int i = 0; i < numOfCategory; i++)
         for (int j = 0; j < trainCategory[i]; j++)
             trainAnswers.push_back(i);
@@ -63,12 +66,12 @@ int main(int argc, char* argv[]) {
     }
 
     // формируем правильные ответы для тестовой выборки
-    Mat testAnswers((int)testFilesList.size(), 1, CV_32F);
+    Mat testAnswers(0, 1, CV_32S);
     for (int i = 0; i < numOfCategory; i++)
         for (int j = 0; j < testCategory[i]; j++)
             testAnswers.push_back(i);
 
-    Ptr<Feature2D> keyPointsDetector = SIFT::create();
+    Ptr<Feature2D> keyPointsDetector = SURF::create();
 
     Ptr<DescriptorMatcher> dMatcher = DescriptorMatcher::create("BruteForce");
 
@@ -88,8 +91,10 @@ int main(int argc, char* argv[]) {
     // получаем набор предсказанный значений
     Mat predictions = predictOnTestData(testFilesList, keyPointsDetector, bowExtractor, rTrees);
 
+
     // считаем ошибку
     float error = calcClassificationError(testAnswers, predictions);
+    cout << 100 - error * 100 << "% correct answers\n";
 
     return 0;
 }

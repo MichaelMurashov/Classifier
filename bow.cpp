@@ -20,7 +20,7 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
     vector<KeyPoint> keyPoints;
     BOWKMeansTrainer tr(VOC_SIZE);
 
-    cout << "\nTrain vocabulary\n";
+    cout << endl << "Train vocabulary" << endl;
     for (int i = 0; i < filesList.size(); i++) {
         img = imread(filesList[i], IMREAD_GRAYSCALE);
 
@@ -54,7 +54,7 @@ void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat
     trainData.create(0, bowExtractor->descriptorSize(), CV_32F);
     trainResponses.create(0, 1, CV_32S);
 
-    cout << "Formation of training sample\n";
+    cout << "Formation of training sample" << endl;
     for (int i = 0; i < filesList.size(); i++) {
         trainData.push_back(extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]));
         trainResponses.push_back(responses.at<int>(i));
@@ -87,6 +87,6 @@ Mat predictOnTestData(const vector<string>& filesList, const Ptr<Feature2D> keyP
         answers.push_back(qwe);
     }
 
-    cout << "\n\n";
+    cout << endl << endl;
     return answers;
 }

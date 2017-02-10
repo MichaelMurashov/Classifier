@@ -20,8 +20,10 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
     vector<KeyPoint> keyPoints;
     BOWKMeansTrainer tr(vocSize);
 
+    cout << "\nTrain vocabulary\n";
     for (int i = 0; i < filesList.size(); i++) {
-       // cout << i << endl;
+        //cout << (float)(i/filesList.size())*100 << "%\r";
+
         img = imread(filesList[i], IMREAD_GRAYSCALE);
 
         keyPointsDetector->detect(img, keyPoints);
@@ -30,42 +32,42 @@ Mat trainVocabulary(const vector<string>& filesList, const Ptr<Feature2D>& keyPo
         tr.add(descriptors);
     }
 
-    Mat qwe = tr.cluster();
-    return qwe;
+    cout << "\nWait...";
+    Mat temp = tr.cluster();
+    cout << "\n\n";
+    return temp;
 }
 
 // возвращает признаковое описание изображения
-//Mat extractFeaturesFromImage(Ptr<Feature2D> keyPointsDetector, Ptr<BOWImgDescriptorExtractor> bowExtractor,
-//                             const string& fileName) {
-//    Mat img = imread(fileName, IMREAD_GRAYSCALE);
-//
-//    vector<KeyPoint> keyPoints;
-//    keyPointsDetector->detect(img, keyPoints);
-//
-//    Mat imgDescriptor;
-//    bowExtractor->compute(img, keyPoints, imgDescriptor);
-//
-//    return imgDescriptor;
-//}
+Mat extractFeaturesFromImage(Ptr<Feature2D> keyPointsDetector, Ptr<BOWImgDescriptorExtractor> bowExtractor,
+                             const string& fileName) {
+    Mat imgDescriptor, keyPointsDescriptors;
+    Mat img = imread(fileName, IMREAD_GRAYSCALE);
+    vector<KeyPoint> keyPoints;
+
+    keyPointsDetector->detect(img, keyPoints);
+
+    keyPointsDetector->compute(img, keyPoints, keyPointsDescriptors);
+    bowExtractor->compute(keyPointsDescriptors, imgDescriptor);
+
+    return imgDescriptor;
+}
 
 // формирование обучающей выборки
 void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat& trainData, Mat& trainResponses,
                       const Ptr<Feature2D>& keyPointsDetector, const Ptr<BOWImgDescriptorExtractor>& bowExtractor) {
-    Mat img, imgDescriptor;
-    vector<KeyPoint> keyPoints;
-
     trainData.create(filesList.size(), bowExtractor->descriptorSize(), CV_32F);
     trainResponses.create(filesList.size(), 1, CV_32S);
 
+    cout << "Formation of training sample\n";
     for (int i = 0; i < filesList.size(); i++) {
-        img = imread(filesList[i], IMREAD_GRAYSCALE);
-
-        keyPointsDetector->detect(img, keyPoints);
-        bowExtractor->compute(img, keyPoints, imgDescriptor);
+        //cout << "\r" << i/filesList.size()*100 << "%";
 
         trainData.push_back(extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]));
         trainResponses.push_back(responses.at<int>(i));
     }
+
+    cout << "\n\n";
 }
 
 // обучение классификатора «случайный лес»
@@ -85,15 +87,17 @@ Ptr<RTrees> trainClassifier(const Mat& trainData, const Mat& trainResponses) {
 // возвращает набор предсказанных значений для тестовой выборки
 Mat predictOnTestData(const vector<string>& filesList, const Ptr<Feature2D> keyPointsDetector,
                       const Ptr<BOWImgDescriptorExtractor> bowExtractor, const Ptr<RTrees> classifier) {
-    Mat answers(filesList.size(), 1, CV_32S);
+    Mat answers(filesList.size(), 1, CV_32F);
 
+    cout << "Prediction class\n";
     for (int i = 0; i < filesList.size(); i++) {
-        Mat description = extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]);
+       // cout << "\r" << i/filesList.size()*100 << "%";
 
-        answers.push_back(classifier->predict(description));
+        Mat description = extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]);
+        float qwe = classifier->predict(description);
+        answers.push_back(qwe);
     }
 
+    cout << "\n\n";
     return answers;
 }
-
-

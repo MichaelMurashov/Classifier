@@ -53,7 +53,7 @@ void getAnswers(char* argv[], Mat& trainAnswers, Mat& testAnswers,
         int testCount = 0;
 
         getFilesInDir(argv[i + 1], trainFilesList, trainCount);
-        getFilesInDir(argv[i + 5], testFilesList, testCount);
+        getFilesInDir(argv[i + 1 + NUM_OF_CATEGORY], testFilesList, testCount);
 
         trainCategories[i] = trainCount;
         testCategories[i] = testCount;

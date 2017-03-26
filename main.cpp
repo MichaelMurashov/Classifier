@@ -1,9 +1,12 @@
 #include <iostream>
 
-using std::cout;
-
 #include "src/bow.cpp"
 #include "src/auxiliary.cpp"
+
+//
+
+using std::cout;
+using std::endl;
 
 int main(int argc, char* argv[]) {
     Ptr<Feature2D> keyPointsDetector = SURF::create();
@@ -17,6 +20,9 @@ int main(int argc, char* argv[]) {
 
     // получаем списки файлов и правильные ответы для выборок
     getAnswers(argv, trainAnswers, testAnswers, trainFilesList, testFilesList);
+
+    cout << "train count: " << trainFilesList.size() << endl
+         << "test count: " << testFilesList.size() << endl;
 
     // устанавливаем словарь
     Mat vocabulary = trainVocabulary(trainFilesList, keyPointsDetector);
@@ -34,7 +40,7 @@ int main(int argc, char* argv[]) {
 
     // считаем ошибку
     float error = calcClassificationError(testAnswers, predictions);
-    cout << 100 - error * 100 << "% correct answers\n";
+    cout << 100 - error * 100 << "% correct answers" << endl;
 
     return 0;
 }

@@ -1,8 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <string>
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/ml.hpp>
 
@@ -65,7 +64,7 @@ void extractTrainData(const vector<string>& filesList, const Mat& responses, Mat
 Ptr<RTrees> trainClassifier(const Mat& trainData, const Mat& trainResponses) {
     Ptr<RTrees> rTrees;
 
-    rTrees = ml::RTrees::create();
+    rTrees = RTrees::create();
     rTrees->setTermCriteria(TermCriteria(TermCriteria::COUNT, NUM_OF_TREES, 0));
 
     Ptr<TrainData> tData = TrainData::create(trainData, ROW_SAMPLE, trainResponses);
@@ -83,8 +82,9 @@ Mat predictOnTestData(const vector<string>& filesList, const Ptr<Feature2D> keyP
     cout << "Prediction class";
     for (int i = 0; i < filesList.size(); i++) {
         Mat description = extractFeaturesFromImage(keyPointsDetector, bowExtractor, filesList[i]);
-        float qwe = classifier->predict(description);
-        answers.push_back(qwe);
+
+        float answer = classifier->predict(description);
+        answers.push_back(answer);
     }
 
     cout << endl << endl;

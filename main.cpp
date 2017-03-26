@@ -2,8 +2,8 @@
 
 using std::cout;
 
-#include "bow.cpp"
-#include "auxiliary.cpp"
+#include "src/bow.cpp"
+#include "src/auxiliary.cpp"
 
 int main(int argc, char* argv[]) {
     Ptr<Feature2D> keyPointsDetector = SURF::create();
